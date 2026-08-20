@@ -1,51 +1,53 @@
 from app.schemas.product import ProductCreate, ProductUpdate
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-products = [
-    {
-        "id": 1,
-        "name": "Milk",
-        "price": 25_000,
-        "quantity": 10,
-        "description": None,
-    }
-]
+from app.models.product import Product
 
 
-def get_products():
-    return products
+def get_products(db: Session):
+    return db.scalars(select(Product)).all()
 
 
-def get_product(product_id: int):
-    return next((p for p in products if p["id"] == product_id), None)
+def get_product(db: Session, product_id: int):
+    return db.get(Product, product_id)
 
 
-def create_product(product: ProductCreate):
-    new_id = max((p["id"] for p in products), default=0) + 1
+def create_product(db: Session, product: ProductCreate):
 
-    new_product = {"id": new_id, **product.model_dump()}
+    new_product = Product(**product.model_dump())
 
-    products.append(new_product)
+    db.add(new_product)
+    db.commit()
+    db.refresh(new_product)
 
     return new_product
 
 
-def update_product(product_id: int, product: ProductUpdate):
-    existing_product = get_product(product_id)
+def update_product(db: Session, product_id: int, product: ProductUpdate):
+    existing_product = get_product(db, product_id)
 
     if existing_product is None:
         return None
 
-    existing_product.update(product.model_dump())
+    update_data = product.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(existing_product, field, value)
+
+    db.commit()
+    db.refresh(existing_product)
 
     return existing_product
 
 
-def delete_product(product_id: int):
-    existing_product = get_product(product_id)
+def delete_product(db: Session, product_id: int):
+    existing_product = get_product(db, product_id)
 
     if existing_product is None:
         return None
 
-    products.remove(existing_product)
+    db.delete(existing_product)
+    db.commit()
 
     return existing_product
