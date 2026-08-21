@@ -1,12 +1,69 @@
-from app.schemas.product import ProductCreate, ProductUpdate
-from sqlalchemy import select
+from app.schemas.product import ProductCreate, ProductUpdate, ProductPatch
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
-
+from typing import Literal
 from app.models.product import Product
 
 
-def get_products(db: Session):
-    return db.scalars(select(Product)).all()
+def count_products(
+    db: Session,
+    name: str | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+):
+    query = select(func.count()).select_from(Product)
+
+    if name:
+        query = query.where(Product.name.ilike(f"%{name}%"))
+
+    if min_price is not None:
+        query = query.where(Product.price >= min_price)
+
+    if max_price is not None:
+        query = query.where(Product.price <= max_price)
+
+    return db.scalar(query)
+
+
+def get_products(
+    db: Session,
+    page: int,
+    limit: int,
+    name: str | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+    sort_by: Literal["id", "name", "price", "quantity"] = "id",
+    order: Literal["asc", "desc"] = "asc",
+):
+    skip = (page - 1) * limit
+
+    query = select(Product)
+
+    if name:
+        query = query.where(Product.name.ilike(f"%{name}%"))
+
+    if min_price is not None:
+        query = query.where(Product.price >= min_price)
+
+    if max_price is not None:
+        query = query.where(Product.price <= max_price)
+
+    sort_column = {
+        "id": Product.id,
+        "name": Product.name,
+        "price": Product.price,
+        "quantity": Product.quantity
+    }[sort_by]
+    
+    if order == "desc":
+        sort_column = sort_column.desc()
+    else:
+        sort_column = sort_column.asc()
+
+
+    query = query.order_by(sort_column).offset(skip).limit(limit)
+
+    return db.scalars(query).all()
 
 
 def get_product(db: Session, product_id: int):
@@ -24,7 +81,7 @@ def create_product(db: Session, product: ProductCreate):
     return new_product
 
 
-def update_product(db: Session, product_id: int, product: ProductUpdate):
+def update_product(db: Session, product_id: int, product: ProductUpdate | ProductPatch):
     existing_product = get_product(db, product_id)
 
     if existing_product is None:
