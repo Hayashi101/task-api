@@ -10,6 +10,9 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
     )
+    
+    secret_key: str
+    access_token_expire_minutes: int = 30
 
 settings = Settings()
 

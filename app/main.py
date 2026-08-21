@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 
 from app.routers.products import router as product_router
 from app.routers.users import router as user_router
+from app.routers.auth import router as auth_router
 from app.core.config import settings
 from app.core.exceptions import ProductAlreadyExistsError, UserAlreadyExistsError
 
@@ -12,6 +13,7 @@ app = FastAPI(title=settings.app_name, debug=settings.debug)
 
 app.include_router(product_router)
 app.include_router(user_router)
+app.include_router(auth_router)
 
 
 @app.get("/")

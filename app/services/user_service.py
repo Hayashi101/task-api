@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
 from app.core.exceptions import UserAlreadyExistsError
-from app.core.security import hash_password
+from app.core.security import hash_password, verify_password
 from app.models.user import User
 from app.schemas.user import UserCreate
 
@@ -36,3 +36,18 @@ def create_user(db: Session, user: UserCreate):
     db.refresh(new_user)
 
     return new_user
+
+def authenticate_user(db: Session, email: str, password: str):
+    existing_user = get_user_by_email(db, email)
+    
+    if existing_user is None:
+      return None
+    
+    verified_password = verify_password(password, existing_user.hashed_password)
+    
+    if not verified_password:
+      return None
+    
+    return existing_user
+    
+    
