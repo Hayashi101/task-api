@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -30,6 +31,8 @@ class ProductResponse(BaseModel):
     price: float
     quantity: int
     description: str | None
+    created_at: datetime
+    updated_at: datetime
 
 
 class ProductListResponse(BaseModel):

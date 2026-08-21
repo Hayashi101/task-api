@@ -2,8 +2,16 @@ from app.core.exceptions import ProductAlreadyExistsError
 from app.schemas.product import ProductCreate, ProductUpdate, ProductPatch
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from typing import Literal
 from app.models.product import Product
+
+def commit_or_raise_duplicate(db: Session):
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise ProductAlreadyExistsError() from exc
 
 def count_products(
     db: Session,
@@ -79,7 +87,7 @@ def create_product(db: Session, product: ProductCreate):
     new_product = Product(**product.model_dump())
 
     db.add(new_product)
-    db.commit()
+    commit_or_raise_duplicate(db)
     db.refresh(new_product)
 
     return new_product
@@ -96,7 +104,7 @@ def update_product(db: Session, product_id: int, product: ProductUpdate | Produc
     for field, value in update_data.items():
         setattr(existing_product, field, value)
 
-    db.commit()
+    commit_or_raise_duplicate(db)
     db.refresh(existing_product)
 
     return existing_product
