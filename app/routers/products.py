@@ -59,13 +59,7 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(product: ProductCreate, db: Session = Depends(get_db)):
 
-    try:
-        return product_service.create_product(db, product)
-    except product_service.ProductAlreadyExistsError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Product name already exists",
-        )
+    return product_service.create_product(db, product)
 
 
 @router.put("/{product_id}", response_model=ProductResponse)
