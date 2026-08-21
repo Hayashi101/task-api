@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from typing import Literal
 from app.models.product import Product
 
+class ProductAlreadyExistsError(Exception):
+    pass
 
 def count_products(
     db: Session,
@@ -71,6 +73,10 @@ def get_product(db: Session, product_id: int):
 
 
 def create_product(db: Session, product: ProductCreate):
+    existing_product = db.scalars(select(Product).where(Product.name == product.name))
+    
+    if existing_product is not None:
+        raise ProductAlreadyExistsError
 
     new_product = Product(**product.model_dump())
 
