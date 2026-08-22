@@ -33,6 +33,7 @@ class ProductResponse(BaseModel):
     description: str | None
     created_at: datetime
     updated_at: datetime
+    owner_id: int | None
 
 
 class ProductListResponse(BaseModel):

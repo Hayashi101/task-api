@@ -6,12 +6,14 @@ from sqlalchemy.exc import IntegrityError
 from typing import Literal
 from app.models.product import Product
 
+
 def commit_or_raise_duplicate(db: Session):
     try:
         db.commit()
     except IntegrityError as exc:
         db.rollback()
         raise ProductAlreadyExistsError() from exc
+
 
 def count_products(
     db: Session,
@@ -60,14 +62,13 @@ def get_products(
         "id": Product.id,
         "name": Product.name,
         "price": Product.price,
-        "quantity": Product.quantity
+        "quantity": Product.quantity,
     }[sort_by]
-    
+
     if order == "desc":
         sort_column = sort_column.desc()
     else:
         sort_column = sort_column.asc()
-
 
     query = query.order_by(sort_column).offset(skip).limit(limit)
 
@@ -78,13 +79,13 @@ def get_product(db: Session, product_id: int):
     return db.get(Product, product_id)
 
 
-def create_product(db: Session, product: ProductCreate):
+def create_product(db: Session, product: ProductCreate, owner_id: int):
     existing_product = db.scalar(select(Product).where(Product.name == product.name))
-    
+
     if existing_product is not None:
         raise ProductAlreadyExistsError()
 
-    new_product = Product(**product.model_dump())
+    new_product = Product(**product.model_dump(), owner_id=owner_id)
 
     db.add(new_product)
     commit_or_raise_duplicate(db)

@@ -11,6 +11,8 @@ from app.services import product_service
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from typing import Literal
+from app.core.dependencies import get_current_user
+from app.models.user import User
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -56,10 +58,18 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
     return product
 
 
-@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
-def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+@router.post(
+    "/",
+    response_model=ProductResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_product(
+    product: ProductCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
 
-    return product_service.create_product(db, product)
+    return product_service.create_product(db, product, current_user.id)
 
 
 @router.put("/{product_id}", response_model=ProductResponse)
