@@ -3,3 +3,6 @@ class ProductAlreadyExistsError(Exception):
 
 class UserAlreadyExistsError(Exception):
     pass
+
+class InvalidCurrentPasswordError(Exception):
+    pass

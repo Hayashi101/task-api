@@ -6,7 +6,11 @@ from app.routers.products import router as product_router
 from app.routers.users import router as user_router
 from app.routers.auth import router as auth_router
 from app.core.config import settings
-from app.core.exceptions import ProductAlreadyExistsError, UserAlreadyExistsError
+from app.core.exceptions import (
+    InvalidCurrentPasswordError,
+    ProductAlreadyExistsError,
+    UserAlreadyExistsError,
+)
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
 
@@ -40,4 +44,14 @@ async def user_already_exists_exception_handler(
     return JSONResponse(
         status_code=409,
         content={"detail": "Email already registered"},
+    )
+
+
+@app.exception_handler(InvalidCurrentPasswordError)
+async def invalid_current_password_exception_handler(
+    request: Request,
+    exc: InvalidCurrentPasswordError,
+):
+    return JSONResponse(
+        status_code=400, content={"detail": "Current password is incorrect"}
     )

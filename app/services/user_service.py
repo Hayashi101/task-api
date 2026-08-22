@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
-from app.core.exceptions import UserAlreadyExistsError
+from app.core.exceptions import InvalidCurrentPasswordError, UserAlreadyExistsError
 from app.core.security import hash_password, verify_password
 from app.models.user import User
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, ChangePasswordRequest
 
 
 def commit_or_raise_duplicate(db: Session):
@@ -37,17 +37,34 @@ def create_user(db: Session, user: UserCreate):
 
     return new_user
 
+
 def authenticate_user(db: Session, email: str, password: str):
     existing_user = get_user_by_email(db, email)
-    
+
     if existing_user is None:
-      return None
-    
+        return None
+
     verified_password = verify_password(password, existing_user.hashed_password)
-    
+
     if not verified_password:
-      return None
-    
+        return None
+
     return existing_user
+
+
+def change_password(
+    db: Session,
+    user: User,
+    password_data: ChangePasswordRequest,
+):
+
+    verified_password = verify_password(
+        password_data.current_password, user.hashed_password
+    )
+
+    if not verified_password:
+        raise InvalidCurrentPasswordError()
+
+    user.hashed_password = hash_password(password_data.new_password)
     
-    
+    db.commit()
