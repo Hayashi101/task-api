@@ -27,6 +27,7 @@ def get_products(
     max_price: float | None = Query(default=None, gt=0),
     sort_by: Literal["id", "name", "price", "quantity"] = Query(default="id"),
     order: Literal["asc", "desc"] = Query(default="asc"),
+    current_user: User = Depends(get_current_user),
 ):
     if min_price is not None and max_price is not None and min_price > max_price:
         raise HTTPException(
@@ -35,9 +36,11 @@ def get_products(
         )
 
     items = product_service.get_products(
-        db, page, limit, name, min_price, max_price, sort_by, order
+        db, current_user.id, page, limit, name, min_price, max_price, sort_by, order
     )
-    total = product_service.count_products(db, name, min_price, max_price)
+    total = product_service.count_products(
+        db, current_user.id, name, min_price, max_price
+    )
     total_pages = (total + limit - 1) // limit
     return {
         "items": items,
@@ -49,8 +52,12 @@ def get_products(
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
-def get_product(product_id: int, db: Session = Depends(get_db)):
-    product = product_service.get_product(db, product_id)
+def get_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    product = product_service.get_product(db, product_id, current_user.id)
 
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -74,9 +81,14 @@ def create_product(
 
 @router.put("/{product_id}", response_model=ProductResponse)
 def update_product(
-    product_id: int, product: ProductUpdate, db: Session = Depends(get_db)
+    product_id: int,
+    product: ProductUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    existing_product = product_service.update_product(db, product_id, product)
+    existing_product = product_service.update_product(
+        db, product_id, product, current_user.id
+    )
 
     if existing_product is None:
         raise HTTPException(
@@ -88,9 +100,14 @@ def update_product(
 
 @router.patch("/{product_id}", response_model=ProductResponse)
 def patch_product(
-    product_id: int, product: ProductPatch, db: Session = Depends(get_db)
+    product_id: int,
+    product: ProductPatch,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    existing_product = product_service.update_product(db, product_id, product)
+    existing_product = product_service.update_product(
+        db, product_id, product, current_user.id
+    )
 
     if existing_product is None:
         raise HTTPException(
@@ -101,8 +118,12 @@ def patch_product(
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_product(product_id: int, db: Session = Depends(get_db)):
-    existing_product = product_service.delete_product(db, product_id)
+def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing_product = product_service.delete_product(db, product_id, current_user.id)
 
     if existing_product is None:
         raise HTTPException(

@@ -17,11 +17,12 @@ def commit_or_raise_duplicate(db: Session):
 
 def count_products(
     db: Session,
+    owner_id: int,
     name: str | None = None,
     min_price: float | None = None,
     max_price: float | None = None,
 ):
-    query = select(func.count()).select_from(Product)
+    query = select(func.count()).select_from(Product).where(Product.owner_id == owner_id)
 
     if name:
         query = query.where(Product.name.ilike(f"%{name}%"))
@@ -37,6 +38,7 @@ def count_products(
 
 def get_products(
     db: Session,
+    owner_id: int,
     page: int,
     limit: int,
     name: str | None = None,
@@ -47,7 +49,7 @@ def get_products(
 ):
     skip = (page - 1) * limit
 
-    query = select(Product)
+    query = select(Product).where(Product.owner_id == owner_id)
 
     if name:
         query = query.where(Product.name.ilike(f"%{name}%"))
@@ -75,8 +77,14 @@ def get_products(
     return db.scalars(query).all()
 
 
-def get_product(db: Session, product_id: int):
-    return db.get(Product, product_id)
+def get_product(db: Session, product_id: int, owner_id: int):
+
+    query = select(Product).where(
+        Product.id == product_id,
+        Product.owner_id == owner_id,
+    )
+
+    return db.scalar(query)
 
 
 def create_product(db: Session, product: ProductCreate, owner_id: int):
@@ -94,8 +102,10 @@ def create_product(db: Session, product: ProductCreate, owner_id: int):
     return new_product
 
 
-def update_product(db: Session, product_id: int, product: ProductUpdate | ProductPatch):
-    existing_product = get_product(db, product_id)
+def update_product(
+    db: Session, product_id: int, product: ProductUpdate | ProductPatch, owner_id: int
+):
+    existing_product = get_product(db, product_id, owner_id)
 
     if existing_product is None:
         return None
@@ -111,8 +121,8 @@ def update_product(db: Session, product_id: int, product: ProductUpdate | Produc
     return existing_product
 
 
-def delete_product(db: Session, product_id: int):
-    existing_product = get_product(db, product_id)
+def delete_product(db: Session, product_id: int, owner_id: int):
+    existing_product = get_product(db, product_id, owner_id)
 
     if existing_product is None:
         return None
