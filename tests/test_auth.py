@@ -1,66 +1,36 @@
-from uuid import uuid4
-
-
-def register_user(client):
-    email = f"test_{uuid4().hex[:8]}@example.com"
-    password = "strongpassword123"
-
-    response = client.post(
-        "/users/register", json={"email": email, "password": password}
-    )
-
-    assert response.status_code == 201
-
-    return email, password
-
-
 def login(client, email: str, password: str):
-    response = client.post(
+    return client.post(
         "/auth/login",
-        data={
-            "username": email,
-            "password": password,
-        },
+        data={"username": email, "password": password},
     )
 
-    return response
 
+def test_login_success(client, user_factory):
+    user = user_factory()
 
-def get_auth_headers(token):
-    return {
-        "Authorization": f"Bearer {token}",
-    }
-
-
-def test_login_success(client):
-    email, password = register_user(client)
-
-    response = login(client, email, password)
+    response = login(client, user["email"], user["password"])
 
     assert response.status_code == 200
-
     data = response.json()
-
-    assert "access_token" in data
     assert data["access_token"]
     assert data["token_type"] == "bearer"
 
 
-def test_login_wrong_password(client):
-    email, password = register_user(client)
+def test_login_wrong_password(client, user_factory):
+    user = user_factory()
 
-    response = login(client, email, "wrongpassword123")
+    response = login(client, user["email"], "wrongpassword123")
 
     assert response.status_code == 401
 
 
-def test_change_password_without_token(client):
-    email, password = register_user(client)
+def test_change_password_without_token(client, user_factory):
+    user = user_factory()
 
     response = client.patch(
         "/users/me/password",
         json={
-            "current_password": password,
+            "current_password": user["password"],
             "new_password": "NewPassword123",
         },
     )
@@ -68,18 +38,12 @@ def test_change_password_without_token(client):
     assert response.status_code == 401
 
 
-def test_change_password_wrong_current_password(client):
-    email, password = register_user(client)
-
-    login_response = login(client, email, password)
-
-    assert login_response.status_code == 200
-
-    token = login_response.json()["access_token"]
+def test_change_password_wrong_current_password(client, user_factory):
+    user = user_factory()
 
     response = client.patch(
         "/users/me/password",
-        headers=get_auth_headers(token),
+        headers=user["headers"],
         json={
             "current_password": "wrongpassword123",
             "new_password": "NewPassword123",
@@ -89,37 +53,25 @@ def test_change_password_wrong_current_password(client):
     assert response.status_code == 400
 
 
-def test_change_password_success(client):
-    email, password = register_user(client)
-
-    login_response = login(client, email, password)
-
-    assert login_response.status_code == 200
-
-    token = login_response.json()["access_token"]
-
+def test_change_password_success(client, user_factory):
+    user = user_factory()
     new_password = "NewPassword123"
 
     response = client.patch(
         "/users/me/password",
-        headers=get_auth_headers(token),
+        headers=user["headers"],
         json={
-            "current_password": password,
+            "current_password": user["password"],
             "new_password": new_password,
         },
     )
 
     assert response.status_code == 204
+    assert login(client, user["email"], user["password"]).status_code == 401
 
-    old_login = login(client, email, password)
-
-    assert old_login.status_code == 401
-
-    new_login = login(client, email, new_password)
+    new_login = login(client, user["email"], new_password)
 
     assert new_login.status_code == 200
-
     data = new_login.json()
-
-    assert "access_token" in data
+    assert data["access_token"]
     assert data["token_type"] == "bearer"

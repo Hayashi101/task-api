@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy import create_engine
@@ -43,3 +45,66 @@ def client():
     
     Base.metadata.drop_all(bind=engine)
 
+@pytest.fixture
+def user_factory(client):
+    def create_user():
+        email = f"user_{uuid4().hex}@example.com"
+        password = "Password123"
+
+        # Register
+        response = client.post(
+            "/users/register",
+            json={
+                "email": email,
+                "password": password,
+            },
+        )
+
+        assert response.status_code == 201
+
+        # Login
+        response = client.post(
+            "/auth/login",
+            data={
+                "username": email,
+                "password": password,
+            },
+        )
+
+        assert response.status_code == 200
+
+        token = response.json()["access_token"]
+
+        return {
+            "email": email,
+            "password": password,
+            "token": token,
+            "headers": {
+                "Authorization": f"Bearer {token}",
+            },
+        }
+
+    return create_user
+
+
+@pytest.fixture
+def product_factory(client):
+    def create_product(headers):
+        product_name = f"Product-{uuid4().hex}"
+
+        response = client.post(
+            "/products/",
+            headers=headers,
+            json={
+                "name": product_name,
+                "price": 10.5,
+                "quantity": 3,
+                "description": "Authorization test",
+            },
+        )
+
+        assert response.status_code == 201
+
+        return response.json()
+
+    return create_product
