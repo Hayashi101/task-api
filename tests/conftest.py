@@ -9,9 +9,10 @@ from sqlalchemy.pool import StaticPool
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
+from sqlalchemy import select
 
 from app.models import product as product_model
-from app.models import user as user_model
+from app.models.user import User
 
 TEST_DATABASE_URL = "sqlite://"
 
@@ -40,10 +41,11 @@ def client():
 
     with TestClient(app) as test_client:
         yield test_client
-        
+
     app.dependency_overrides.clear()
-    
+
     Base.metadata.drop_all(bind=engine)
+
 
 @pytest.fixture
 def user_factory(client):
@@ -108,3 +110,23 @@ def product_factory(client):
         return response.json()
 
     return create_product
+
+
+@pytest.fixture
+def admin_factory(user_factory):
+    def create_admin():
+        user = user_factory()
+
+        db = TestingSessionLocal()
+        try:
+            db_user = db.scalar(
+                select(User).where(User.email == user["email"])
+            )
+            db_user.role = "admin"
+            db.commit()
+        finally:
+            db.close()
+
+        return user
+
+    return create_admin

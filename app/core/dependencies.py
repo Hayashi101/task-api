@@ -10,7 +10,6 @@ from app.db.session import get_db
 from app.core.config import settings
 from app.models.user import User
 from app.services.user_service import get_user_by_email
-from app.core.exceptions import UserNotAdminError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -43,7 +42,3 @@ def get_current_admin(
         )
 
     return current_user
-
-def require_admin(user: User):
-    if user.role != "admin":
-        raise UserNotAdminError()

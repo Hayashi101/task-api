@@ -75,6 +75,6 @@ def change_password(
 
 
 
-def get_users(db: Session, user: User):
+def get_users(db: Session):
     return  db.scalars(select(User)).all()
 
