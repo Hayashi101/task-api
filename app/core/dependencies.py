@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session
 from app.core.security import ALGORITHM, SECRET_KEY
 from app.db.session import get_db
 from app.core.config import settings
+from app.models.user import User
 from app.services.user_service import get_user_by_email
-
+from app.core.exceptions import UserNotAdminError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -21,7 +22,7 @@ def get_current_user(db: Session = Depends(get_db), token=Depends(oauth2_scheme)
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
         if email is None:
             raise credentials_exception
@@ -31,3 +32,18 @@ def get_current_user(db: Session = Depends(get_db), token=Depends(oauth2_scheme)
     if user is None:
         raise credentials_exception
     return user
+
+def get_current_admin(
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+
+    return current_user
+
+def require_admin(user: User):
+    if user.role != "admin":
+        raise UserNotAdminError()

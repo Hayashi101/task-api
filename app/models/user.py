@@ -36,3 +36,4 @@ class User(Base):
     products: Mapped[list["Product"]] = relationship(
         back_populates="owner",
     )
+    role: Mapped[str] = mapped_column(String(50), nullable=False, server_default="user")

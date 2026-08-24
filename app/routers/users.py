@@ -1,8 +1,12 @@
+from typing import List
+
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_current_admin
 from app.models.user import User
 from app.schemas.user import ChangePasswordRequest, UserCreate, UserResponse
 from app.services import user_service
+from app.core.exceptions import UserNotAdminError
+
 
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -30,3 +34,10 @@ def change_password(
 ):
     user_service.change_password(db, current_user, request)
     return
+
+
+@router.get("/", response_model=List[UserResponse])
+def get_all_users(
+    current_user: User = Depends(get_current_admin), db: Session = Depends(get_db)
+):
+    return user_service.get_users(db, current_user)

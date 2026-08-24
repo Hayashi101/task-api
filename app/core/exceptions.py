@@ -6,3 +6,6 @@ class UserAlreadyExistsError(Exception):
 
 class InvalidCurrentPasswordError(Exception):
     pass
+
+class UserNotAdminError(Exception):
+    pass

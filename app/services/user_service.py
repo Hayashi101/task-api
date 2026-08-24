@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
-from app.core.exceptions import InvalidCurrentPasswordError, UserAlreadyExistsError
+from app.core.exceptions import (
+    InvalidCurrentPasswordError,
+    UserAlreadyExistsError,
+    UserNotAdminError,
+)
 from app.core.security import hash_password, verify_password
 from app.models.user import User
 from app.schemas.user import UserCreate, ChangePasswordRequest
@@ -66,5 +70,11 @@ def change_password(
         raise InvalidCurrentPasswordError()
 
     user.hashed_password = hash_password(password_data.new_password)
-    
+
     db.commit()
+
+
+
+def get_users(db: Session, user: User):
+    return  db.scalars(select(User)).all()
+
