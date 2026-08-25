@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     secret_key: str
     access_token_expire_minutes: int = 30
     refresh_token_expire_minutes: int = 60 * 24 * 7
+    cors_origins: list[str] = []
 
 settings = Settings()
 
