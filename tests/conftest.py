@@ -64,6 +64,8 @@ def user_factory(client):
 
         assert response.status_code == 201
 
+        user_data = response.json()
+
         # Login
         response = client.post(
             "/auth/login",
@@ -78,6 +80,7 @@ def user_factory(client):
         token = response.json()["access_token"]
 
         return {
+            "id": user_data["id"],
             "email": email,
             "password": password,
             "token": token,
@@ -119,9 +122,7 @@ def admin_factory(user_factory):
 
         db = TestingSessionLocal()
         try:
-            db_user = db.scalar(
-                select(User).where(User.email == user["email"])
-            )
+            db_user = db.scalar(select(User).where(User.email == user["email"]))
             db_user.role = "admin"
             db.commit()
         finally:
