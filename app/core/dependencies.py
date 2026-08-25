@@ -29,8 +29,9 @@ def get_current_user(db: Session = Depends(get_db), token=Depends(oauth2_scheme)
 
         email = payload.get("sub")
         token_version = payload.get("token_version")
+        token_type = payload.get("type")
 
-        if email is None or token_version is None:
+        if email is None or token_version is None or token_type != "access":
             raise credentials_exception
 
     except InvalidTokenError:
