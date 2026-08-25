@@ -70,6 +70,7 @@ def change_password(
         raise InvalidCurrentPasswordError()
 
     user.hashed_password = hash_password(password_data.new_password)
+    user.token_version += 1
 
     db.commit()
 
@@ -94,6 +95,7 @@ def deactivate_user(db: Session, user_id: int) -> None:
         raise UserNotFoundError()
 
     user.is_active = False
+    user.token_version += 1
     db.commit()
 
 

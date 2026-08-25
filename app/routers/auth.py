@@ -25,7 +25,12 @@ def authenticate_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(data={"sub": existing_user.email})
+    access_token = create_access_token(
+        data={
+            "sub": existing_user.email,
+            "token_version": existing_user.token_version,
+        }
+    )
     return {
         "access_token": access_token,
         "token_type": "bearer",

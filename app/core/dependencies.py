@@ -21,16 +21,27 @@ def get_current_user(db: Session = Depends(get_db), token=Depends(oauth2_scheme)
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+        )
+
         email = payload.get("sub")
-        if email is None:
+        token_version = payload.get("token_version")
+
+        if email is None or token_version is None:
             raise credentials_exception
+
     except InvalidTokenError:
         raise credentials_exception
+
     user = get_user_by_email(db, email=email)
-    if user is None or not user.is_active:
+
+    if user is None or not user.is_active or token_version != user.token_version:
         raise credentials_exception
     return user
+
 
 def get_current_admin(
     current_user: User = Depends(get_current_user),
