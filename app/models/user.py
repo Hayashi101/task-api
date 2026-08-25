@@ -37,3 +37,4 @@ class User(Base):
         back_populates="owner",
     )
     role: Mapped[str] = mapped_column(String(50), nullable=False, server_default="user")
+    token_version: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
