@@ -74,25 +74,34 @@ def change_password(
     db.commit()
 
 
-
 def get_users(db: Session):
-    return  db.scalars(select(User)).all()
+    return db.scalars(select(User)).all()
 
 
 def get_user_by_id(user_id: int, db: Session) -> User | None:
     existing_user = db.scalar(select(User).where(User.id == user_id))
-    
+
     if existing_user is None:
         return None
-    
-    return existing_user 
+
+    return existing_user
+
 
 def deactivate_user(db: Session, user_id: int) -> None:
     user = get_user_by_id(user_id, db)
-    
+
     if user is None:
-        raise UserNotFoundError
-    
+        raise UserNotFoundError()
+
     user.is_active = False
     db.commit()
-    
+
+
+def activate_user(db: Session, user_id: int) -> None:
+    user = get_user_by_id(user_id, db)
+
+    if user is None:
+        raise UserNotFoundError()
+
+    user.is_active = True
+    db.commit()
