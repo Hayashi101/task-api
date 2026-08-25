@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     refresh_token_expire_minutes: int = 60 * 24 * 7
     cors_origins: list[str] = []
+    log_level: str = "INFO"
 
 settings = Settings()
 
