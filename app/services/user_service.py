@@ -107,3 +107,7 @@ def activate_user(db: Session, user_id: int) -> None:
 
     user.is_active = True
     db.commit()
+
+def logout_all_devices(db: Session, user: User) -> None:
+    user.token_version += 1
+    db.commit()

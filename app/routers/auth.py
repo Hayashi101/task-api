@@ -3,10 +3,17 @@ from jwt.exceptions import InvalidTokenError
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from app.core.security import ALGORITHM, SECRET_KEY, create_access_token, create_refresh_token
+from app.core.security import (
+    ALGORITHM,
+    SECRET_KEY,
+    create_access_token,
+    create_refresh_token,
+)
 from app.schemas.user import AccessTokenResponse, TokenResponse, RefreshTokenRequest
 from app.services import user_service
 from app.services.user_service import get_user_by_email
+from app.core.dependencies import get_current_user
+from app.models.user import User
 
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -90,3 +97,12 @@ def refresh_access_token(request: RefreshTokenRequest, db: Session = Depends(get
     return AccessTokenResponse(
         access_token=access_token,
     )
+
+
+@router.post("/logout-all", status_code=status.HTTP_204_NO_CONTENT)
+def logout_all(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_service.logout_all_devices(db, current_user)
+    return
