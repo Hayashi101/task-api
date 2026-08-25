@@ -10,6 +10,7 @@ from app.core.exceptions import (
     InvalidCurrentPasswordError,
     ProductAlreadyExistsError,
     UserAlreadyExistsError,
+    UserNotFoundError,
 )
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
@@ -55,3 +56,11 @@ async def invalid_current_password_exception_handler(
     return JSONResponse(
         status_code=400, content={"detail": "Current password is incorrect"}
     )
+
+
+@app.exception_handler(UserNotFoundError)
+async def user_not_found_exception_handler(
+    request: Request,
+    exc: UserNotFoundError,
+):
+    return JSONResponse(status_code=404, content={"detail": "User not found"})

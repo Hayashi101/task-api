@@ -40,4 +40,13 @@ def change_password(
 def get_all_users(
     current_user: User = Depends(get_current_admin), db: Session = Depends(get_db)
 ):
-    return user_service.get_users(db, current_user)
+    return user_service.get_users(db)
+
+
+@router.patch("/{user_id}/deactivate", status_code=status.HTTP_204_NO_CONTENT)
+def deactivate_user(
+    user_id: int,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    return user_service.deactivate_user(db, user_id)

@@ -6,7 +6,7 @@ from typing import Literal
 from app.core.exceptions import (
     InvalidCurrentPasswordError,
     UserAlreadyExistsError,
-    UserNotAdminError,
+    UserNotFoundError,
 )
 from app.core.security import hash_password, verify_password
 from app.models.user import User
@@ -45,7 +45,7 @@ def create_user(db: Session, user: UserCreate):
 def authenticate_user(db: Session, email: str, password: str):
     existing_user = get_user_by_email(db, email)
 
-    if existing_user is None:
+    if existing_user is None or not existing_user.is_active:
         return None
 
     verified_password = verify_password(password, existing_user.hashed_password)
@@ -78,3 +78,21 @@ def change_password(
 def get_users(db: Session):
     return  db.scalars(select(User)).all()
 
+
+def get_user_by_id(user_id: int, db: Session) -> User | None:
+    existing_user = db.scalar(select(User).where(User.id == user_id))
+    
+    if existing_user is None:
+        return None
+    
+    return existing_user 
+
+def deactivate_user(db: Session, user_id: int) -> None:
+    user = get_user_by_id(user_id, db)
+    
+    if user is None:
+        raise UserNotFoundError
+    
+    user.is_active = False
+    db.commit()
+    
