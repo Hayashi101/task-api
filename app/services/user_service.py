@@ -1,7 +1,6 @@
-from sqlalchemy import select, func
-from sqlalchemy.orm import Session
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from typing import Literal
+from sqlalchemy.orm import Session
 
 from app.core.exceptions import (
     InvalidCurrentPasswordError,
@@ -10,7 +9,7 @@ from app.core.exceptions import (
 )
 from app.core.security import hash_password, verify_password
 from app.models.user import User
-from app.schemas.user import UserCreate, ChangePasswordRequest
+from app.schemas.user import ChangePasswordRequest, UserCreate
 
 
 def commit_or_raise_duplicate(db: Session):
@@ -107,6 +106,7 @@ def activate_user(db: Session, user_id: int) -> None:
 
     user.is_active = True
     db.commit()
+
 
 def logout_all_devices(db: Session, user: User) -> None:
     user.token_version += 1

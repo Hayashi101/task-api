@@ -1,8 +1,9 @@
-from pwdlib import PasswordHash
 from datetime import datetime, timedelta, timezone
-from app.core.config import settings
 
 import jwt
+from pwdlib import PasswordHash
+
+from app.core.config import settings
 
 SECRET_KEY = settings.secret_key
 ALGORITHM = "HS256"
@@ -19,6 +20,7 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return password_hash.verify(plain_password, hashed_password)
+
 
 def create_token(data: dict, expires_delta: timedelta) -> str:
     to_encode = data.copy()

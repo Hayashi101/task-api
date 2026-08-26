@@ -1,13 +1,11 @@
 import jwt
-from jwt.exceptions import InvalidTokenError
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-
+from jwt.exceptions import InvalidTokenError
 from sqlalchemy.orm import Session
+
 from app.core.security import ALGORITHM, SECRET_KEY
 from app.db.session import get_db
-from app.core.config import settings
 from app.models.user import User
 from app.services.user_service import get_user_by_email
 

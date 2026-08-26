@@ -7,11 +7,9 @@ class Settings(BaseSettings):
     database_url: str
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore"
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
-    
+
     secret_key: str
     access_token_expire_minutes: int = 30
     refresh_token_expire_minutes: int = 60 * 24 * 7
@@ -19,5 +17,5 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     login_rate_limit: str = "5/minute"
 
-settings = Settings()
 
+settings = Settings()

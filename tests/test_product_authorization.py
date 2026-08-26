@@ -5,9 +5,7 @@ def test_owner_can_get_own_product(client, user_factory, product_factory):
     owner = user_factory()
     product = product_factory(owner["headers"])
 
-    response = client.get(
-        f"/products/{product['id']}", headers=owner["headers"]
-    )
+    response = client.get(f"/products/{product['id']}", headers=owner["headers"])
 
     assert response.status_code == 200
     data = response.json()
@@ -20,16 +18,12 @@ def test_other_user_cannot_get_product(client, user_factory, product_factory):
     other_user = user_factory()
     product = product_factory(owner["headers"])
 
-    response = client.get(
-        f"/products/{product['id']}", headers=other_user["headers"]
-    )
+    response = client.get(f"/products/{product['id']}", headers=other_user["headers"])
 
     assert response.status_code == 404
 
 
-def test_other_user_cannot_update_product(
-    client, user_factory, product_factory
-):
+def test_other_user_cannot_update_product(client, user_factory, product_factory):
     owner = user_factory()
     other_user = user_factory()
     product = product_factory(owner["headers"])
@@ -47,17 +41,13 @@ def test_other_user_cannot_update_product(
 
     assert response.status_code == 404
 
-    response = client.get(
-        f"/products/{product['id']}", headers=owner["headers"]
-    )
+    response = client.get(f"/products/{product['id']}", headers=owner["headers"])
 
     assert response.status_code == 200
     assert response.json() == product
 
 
-def test_other_user_cannot_delete_product(
-    client, user_factory, product_factory
-):
+def test_other_user_cannot_delete_product(client, user_factory, product_factory):
     owner = user_factory()
     other_user = user_factory()
     product = product_factory(owner["headers"])
@@ -68,9 +58,7 @@ def test_other_user_cannot_delete_product(
 
     assert response.status_code == 404
 
-    response = client.get(
-        f"/products/{product['id']}", headers=owner["headers"]
-    )
+    response = client.get(f"/products/{product['id']}", headers=owner["headers"])
 
     assert response.status_code == 200
     assert response.json() == product
@@ -80,14 +68,10 @@ def test_owner_can_delete_own_product(client, user_factory, product_factory):
     owner = user_factory()
     product = product_factory(owner["headers"])
 
-    response = client.delete(
-        f"/products/{product['id']}", headers=owner["headers"]
-    )
+    response = client.delete(f"/products/{product['id']}", headers=owner["headers"])
 
     assert response.status_code == 204
 
-    response = client.get(
-        f"/products/{product['id']}", headers=owner["headers"]
-    )
+    response = client.get(f"/products/{product['id']}", headers=owner["headers"])
 
     assert response.status_code == 404

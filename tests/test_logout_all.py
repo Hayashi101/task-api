@@ -70,8 +70,8 @@ def test_logout_all_invalidates_all_tokens(client, user_factory):
 
     assert response.status_code == 200
 
+
 def test_logout_all_without_token_returns_401(client):
     response = client.post("/auth/logout-all")
 
     assert response.status_code == 401
-

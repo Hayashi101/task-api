@@ -1,24 +1,23 @@
 import jwt
-from jwt.exceptions import InvalidTokenError
-
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
+from jwt.exceptions import InvalidTokenError
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.core.dependencies import get_current_user
+from app.core.rate_limit import limiter
 from app.core.security import (
     ALGORITHM,
     SECRET_KEY,
     create_access_token,
     create_refresh_token,
 )
-from app.schemas.user import AccessTokenResponse, TokenResponse, RefreshTokenRequest
+from app.db.session import get_db
+from app.models.user import User
+from app.schemas.user import AccessTokenResponse, RefreshTokenRequest, TokenResponse
 from app.services import user_service
 from app.services.user_service import get_user_by_email
-from app.core.dependencies import get_current_user
-from app.models.user import User
-
-from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.core.config import settings
-from app.core.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

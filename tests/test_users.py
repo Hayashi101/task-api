@@ -4,12 +4,13 @@ def test_register_user(client):
     )
 
     assert response.status_code == 201
-    
+
     data = response.json()
-    
+
     assert data["email"] == "test@example.com"
     assert "password" not in data
     assert "hashed_password" not in data
+
 
 def test_register_duplicate_email(client):
     payload = {
@@ -32,4 +33,3 @@ def test_register_duplicate_email(client):
     )
 
     assert response.status_code == 409
-

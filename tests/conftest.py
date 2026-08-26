@@ -1,8 +1,8 @@
 from uuid import uuid4
 
-from fastapi.testclient import TestClient
 import pytest
-from sqlalchemy import create_engine
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -10,9 +10,7 @@ from app.core.rate_limit import limiter
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
-from sqlalchemy import select
-
-from app.models import product as product_model
+from app.models import product as product_model  # noqa: F401
 from app.models.user import User
 
 TEST_DATABASE_URL = "sqlite://"
@@ -44,7 +42,7 @@ def client():
 
     with TestClient(app) as test_client:
         yield test_client
-        
+
     limiter.reset()
 
     app.dependency_overrides.clear()

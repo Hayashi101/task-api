@@ -1,16 +1,12 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 import logging
 import time
+
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app.core.rate_limit import limiter
-from app.routers.products import router as product_router
-from app.routers.users import router as user_router
-from app.routers.auth import router as auth_router
-from app.routers.health import router as health_router
 from app.core.config import settings
 from app.core.exceptions import (
     InvalidCurrentPasswordError,
@@ -19,6 +15,11 @@ from app.core.exceptions import (
     UserNotFoundError,
 )
 from app.core.logging import setup_logging
+from app.core.rate_limit import limiter
+from app.routers.auth import router as auth_router
+from app.routers.health import router as health_router
+from app.routers.products import router as product_router
+from app.routers.users import router as user_router
 
 setup_logging(settings.log_level)
 
@@ -37,6 +38,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.middleware("http")
 async def log_request(request: Request, call_next):

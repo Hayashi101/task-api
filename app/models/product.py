@@ -1,14 +1,10 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column
-
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
-
-from app.models.user import User
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.user import User
 
 
 class Product(Base):

@@ -89,7 +89,7 @@ def test_password_change_invalidates_old_token(
     )
 
     assert response.status_code == 200
-    
+
     new_token = response.json()["access_token"]
 
     response = client.get(

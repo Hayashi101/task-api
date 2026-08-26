@@ -1,10 +1,12 @@
-from app.core.exceptions import ProductAlreadyExistsError
-from app.schemas.product import ProductCreate, ProductUpdate, ProductPatch
-from sqlalchemy import select, func
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 from typing import Literal
+
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from app.core.exceptions import ProductAlreadyExistsError
 from app.models.product import Product
+from app.schemas.product import ProductCreate, ProductPatch, ProductUpdate
 
 
 def commit_or_raise_duplicate(db: Session):
@@ -22,7 +24,9 @@ def count_products(
     min_price: float | None = None,
     max_price: float | None = None,
 ):
-    query = select(func.count()).select_from(Product).where(Product.owner_id == owner_id)
+    query = (
+        select(func.count()).select_from(Product).where(Product.owner_id == owner_id)
+    )
 
     if name:
         query = query.where(Product.name.ilike(f"%{name}%"))

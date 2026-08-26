@@ -1,15 +1,13 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, status, Depends
-from app.core.dependencies import get_current_user, get_current_admin
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.orm import Session
+
+from app.core.dependencies import get_current_admin, get_current_user
+from app.db.session import get_db
 from app.models.user import User
 from app.schemas.user import ChangePasswordRequest, UserCreate, UserResponse
 from app.services import user_service
-from app.core.exceptions import UserNotAdminError
-
-
-from sqlalchemy.orm import Session
-from app.db.session import get_db
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
