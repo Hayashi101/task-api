@@ -10,10 +10,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: task_api
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d task_api"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     env:
       APP_NAME: Task API
       DEBUG: "false"
-      DATABASE_URL: sqlite:///./task_api.db
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/task_api
       SECRET_KEY: ci-test-secret-key
 
     steps:
@@ -36,6 +51,9 @@ jobs:
 
       - name: Check formatting with Ruff
         run: python -m ruff format --check .
+
+      - name: Apply database migrations
+        run: alembic upgrade head
 
       - name: Run tests
         run: python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
