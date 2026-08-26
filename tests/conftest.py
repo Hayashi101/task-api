@@ -97,18 +97,20 @@ def user_factory(client):
 
 @pytest.fixture
 def product_factory(client):
-    def create_product(headers):
-        product_name = f"Product-{uuid4().hex}"
+    def create_product(headers, **overrides):
+        product_data = {
+            "name": f"Product-{uuid4().hex}",
+            "price": 10.5,
+            "quantity": 3,
+            "description": "Authorization test",
+        }
+
+        product_data.update(overrides)
 
         response = client.post(
             "/products/",
             headers=headers,
-            json={
-                "name": product_name,
-                "price": 10.5,
-                "quantity": 3,
-                "description": "Authorization test",
-            },
+            json=product_data,
         )
 
         assert response.status_code == 201
