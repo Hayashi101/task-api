@@ -1,7 +1,7 @@
 import jwt
 from jwt.exceptions import InvalidTokenError
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core.security import (
     ALGORITHM,
@@ -17,13 +17,18 @@ from app.models.user import User
 
 from sqlalchemy.orm import Session
 from app.db.session import get_db
+from app.core.config import settings
+from app.core.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.post("/login", response_model=TokenResponse)
+@limiter.limit(settings.login_rate_limit)
 def authenticate_user(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+    request: Request,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
 ):
     existing_user = user_service.authenticate_user(
         db, form_data.username, form_data.password
