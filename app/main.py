@@ -10,6 +10,7 @@ from app.core.rate_limit import limiter
 from app.routers.products import router as product_router
 from app.routers.users import router as user_router
 from app.routers.auth import router as auth_router
+from app.routers.health import router as health_router
 from app.core.config import settings
 from app.core.exceptions import (
     InvalidCurrentPasswordError,
@@ -67,6 +68,7 @@ async def log_request(request: Request, call_next):
 app.include_router(product_router)
 app.include_router(user_router)
 app.include_router(auth_router)
+app.include_router(health_router)
 
 
 @app.get("/")
